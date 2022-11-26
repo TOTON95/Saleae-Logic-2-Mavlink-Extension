@@ -1,13 +1,10 @@
 
-  # Mavlink
-  
-## Getting started
+# Saleae Logic 2 Mavlink Extension
 
-1. Build your extension by updating the Python files for your needs
-2. Create a public Github repo and push your code 
-3. Update this README
-4. Open the Logic app and publish your extension
-5. Create a Github release
-6. Debug your hardware like you've never done before :)
+
+This repository contains a Mavlink Protocol Parser for the [Logic 2 Software](https://www.saleae.com/downloads/)
+which is used by Logic Analyzers from the Company Saleae. The plugin can be used together with Async Serial
+and it delivers the Information of mavlink packets. The supported Mavlink Messages of the plugin are defined in
+the Mavlink dialect [common.xml](https://mavlink.io/kr/messages/common.html)
 
   
