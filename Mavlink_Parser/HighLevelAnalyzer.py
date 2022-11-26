@@ -12728,15 +12728,12 @@ class TypeInfo(object):
 
 
 
-class Packet(object):
+class Field(object):
       def __init__(self,start_time,end_time,value):
         self.start_time = start_time
         self.end_time = end_time
         self.value = value
 
-class PacketSequence(object):
-      def __init__(self):
-        packets = []
 
 
 class Hla(HighLevelAnalyzer):
@@ -12767,20 +12764,21 @@ class Hla(HighLevelAnalyzer):
       'double' : 8,
     }
     
-    allPacketSeries = []
+    allFieldSeries = []
+    STX = 254
 
 
-    def createFrames(self,tested,packetSeries):
+    def createFrames(self,tested,fieldSeries):
         name = tested.name
         fieldtypes = tested.fieldtypes
         fieldnames = tested.fieldnames
         ordered_fieldnames = tested.ordered_fieldnames
         values = tested.values
         frames = []
-        frame1 = AnalyzerFrame('Packet Start', packetSeries[0].start_time, packetSeries[0].end_time, {
+        frame1 = AnalyzerFrame('Packet Start', fieldSeries[0].start_time, fieldSeries[0].end_time, {
                  })
         frames.append(frame1)
-        frame2 = AnalyzerFrame("Message Type",packetSeries[5].start_time,packetSeries[5].end_time,{
+        frame2 = AnalyzerFrame("Message Type",fieldSeries[5].start_time,fieldSeries[5].end_time,{
             'input':name
         })
         frames.append(frame2)
@@ -12803,7 +12801,7 @@ class Hla(HighLevelAnalyzer):
             for t in typeInfos:
                 if fieldname == t.fieldname:
                     size = t.size
-                    dataFrame = AnalyzerFrame('Field',packetSeries[6+payload].start_time,packetSeries[6+payload+size-1].end_time,{
+                    dataFrame = AnalyzerFrame('Field',fieldSeries[6+payload].start_time,fieldSeries[6+payload+size-1].end_time,{
                         'name': fieldname,
                         'input': t.value
                     })
@@ -12818,35 +12816,34 @@ class Hla(HighLevelAnalyzer):
 
     def createMavlinkFramesIfValid(self):
         values = []
-        for packetSeries in self.allPacketSeries:
-            for packet in packetSeries:
-                values.append(packet.value)   
+        for fieldSeries in self.allFieldSeries:
+            for field in fieldSeries:
+                values.append(field.value)   
                 f = MAVLink(None)
             try: 
                 tested = f.decode(bytearray(values))
-                self.allPacketSeries.clear()
-                return self.createFrames(tested,packetSeries)
+                self.allFieldSeries.clear()
+                return self.createFrames(tested,fieldSeries)
             except:
                 values.clear()
+                return []
                 
    
 
 
     def decode(self, frame: AnalyzerFrame):
-      if (int.from_bytes(frame.data['data'],"little")) == 254:
-        packet = Packet(frame.start_time,frame.end_time,(int.from_bytes(frame.data['data'],"little")))
-        for packetSeries in self.allPacketSeries:
-            packetSeries.append(packet)
-        packetSeries = []
-        packetSeries.append(packet)
-        self.allPacketSeries.append(packetSeries)
-        return []
-      else:
-        packet = Packet(frame.start_time,frame.end_time,(int.from_bytes(frame.data['data'],"little")))
-        for packetSeries in self.allPacketSeries:
-            packetSeries.append(packet)
+      if (int.from_bytes(frame.data['data'],"little")) == self.STX:
+        field = Field(frame.start_time,frame.end_time,(int.from_bytes(frame.data['data'],"little")))
+        for fieldSeries in self.allFieldSeries:
+            fieldSeries.append(field)
+        fieldSeries = []
+        fieldSeries.append(field)
+        self.allFieldSeries.append(fieldSeries)
         frame = self.createMavlinkFramesIfValid()
         return frame
-      
-
-      
+      else:
+        field = Field(frame.start_time,frame.end_time,(int.from_bytes(frame.data['data'],"little")))
+        for fieldSeries in self.allFieldSeries:
+            fieldSeries.append(field)
+        frame = self.createMavlinkFramesIfValid()
+        return frame

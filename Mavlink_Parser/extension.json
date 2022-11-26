@@ -3,7 +3,7 @@
   "apiVersion": "1.0.0",
   "author": "Johannes Hanuja",
   "version": "0.0.1",
-  "description": "Simple Mavlink Parser ",
+  "description": "A simple Mavlink Protocol parser",
   "extensions": {
     "Mavlink": {
       "type": "HighLevelAnalyzer",
