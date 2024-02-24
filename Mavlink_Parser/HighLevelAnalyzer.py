@@ -12765,7 +12765,7 @@ class Hla(HighLevelAnalyzer):
     }
     
     allFieldSeries = []
-    STX = 254
+    STX = 253
 
 
     def createFrames(self,tested,fieldSeries):
